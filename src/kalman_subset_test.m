@@ -1,28 +1,38 @@
+
+% add Kalman toolbox
+if ispc
+    addpath(genpath('C:\Users\Shababo\Projects\CommonInput\common-input\ext\Kalman'))
+else
+    addpath(genpath('../ext/Kalman/'))
+end
+
+
 % num neurons
-N = 400;
+N = 50;
 
 % time
-T = 1000;
+T = 10000;
 
 % stim
-x_dim = 100;
+M = 10; % dimension of stimulus
 x_sigma = 1;
-X = [normrnd(0,x_sigma,T,x_dim) ones(T,1)];
+% X = [normrnd(0,x_sigma,T,M) ones(T,1)];
+X = [rand(T,M) ones(T,1)];
 
 % create filters
-theta_sigma = 1;
-theta = normrnd(0,theta_sigma,N,x_dim + 1);
+theta_sigma = .2;
+theta = normrnd(0,theta_sigma,N,M + 1);
 
 % create connectivity - use a spike and slab
-% sparsity = .1;
-% w_sigma = 1;
-% W = normrnd(0,w_sigma,N,N) .* (rand(N,N) < sparsity); 
+sparsity = .1;
+w_sigma = 1;
+W = normrnd(0,w_sigma,N,N) .* (rand(N,N) < sparsity); 
 
 % create connectivity so that it has only eigenvalues less than 1
-eigenvals = rand(N,1);
-D = diag(eigenvals);
-V = orth(randn(N));
-W = V*D*V';
+% eigenvals = (0.5*rand(N,1)+0.5) .* sign(randn(N,1));
+% D = diag(eigenvals);
+% V = orth(randn(N));
+% W = V*D*V';
 
 % create connectivy with all eigvals < 1 AND sparse
 % sparsity = .1;
@@ -46,7 +56,8 @@ end
 
 
 % CASE 1: CONSTANT SUBSET
-K = ceil(N/10);
+% K = ceil(N/10);
+K = N;
 obs_neurons = 1:K;
 S_obs = S(obs_neurons,2:end); % don't forget to chop off t=0 (S(t=0) = zeros)
 
@@ -56,19 +67,24 @@ data = [X'; S_obs];
 ARmode = 1; % set to be AR linear-gaussian model
 diagQ = 1;
 diagR = 1;
+max_iter = 10;
+kalman_dim = K + size(X,2);
+contraint_func = @enforce_constraint;
 [A, C, Q, R, initx, initV, LL] = ...
-    learn_kalman(data, zeros(size([theta(1:K,:) W(1:K,1:K)])), eye(K + size(X,2)), eye(K + size(X,2)), zeros(K), zeros(K+size(X,2),1), eye(K), max_iter, diagQ, diagR, ARmode);
+    learn_kalman(data, zeros(kalman_dim), eye(kalman_dim), eye(kalman_dim), diag([theta_sigma.*ones(1,size(X,2)) ones(1,K)]), zeros(kalman_dim,1), eye(kalman_dim), max_iter, diagQ, diagR, ARmode, @enforce_constraint, M+1, x_sigma);
 
+%% plot diagnostic plots
+A_theta_part = A(M+2:end,1:M+1);
+A_w_part = A(M+2:end,M+2:end);
 
-% NOTE TO SELF FOR PICKING BACK UP... WE ARE HAVING ISSUES WITH MAKING SURE
-% ALL OF OUR PARAMS ARE THE RIGHT SIZE... ALSO, IT LOOKS WE HAVE TO FIGURE
-% OUT HOW TO DEAL WITH THE FACT THAT WE KNOW THE STIMULUS AND THE STIMULUS
-% IS NOT PART OF THE LINEAR DYNAMICAL SYSTEM THAT WE ARE TRYING TO INFER,
-% THAT IS, THE TOP PART OF A IS ALL ZEROS - THERE IS NO INFLUENCE FROM ONE
-% TIME TO THE NEXT...
+figure(1)
+scatter(1:numel(W),W(:))
 
+figure(2)
+scatter(A_w_part(:),W(:))
 
-
+figure(3)
+scatter(A_theta_part(:),theta(:))
 
 
 
