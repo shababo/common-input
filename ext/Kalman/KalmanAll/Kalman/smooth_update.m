@@ -32,5 +32,6 @@ J = Vfilt * A' * inv(Vpred); % smoother gain matrix
 xsmooth = xfilt + J*(xsmooth_future - xpred);
 Vsmooth = Vfilt + J*(Vsmooth_future - Vpred)*J';
 VVsmooth_future = VVfilt_future + (Vsmooth_future - Vfilt_future)*inv(Vfilt_future)*VVfilt_future;
+%VVsmooth_future = VVfilt_future + (Vsmooth_future - Vfilt_future)*pinv(Vfilt_future)*VVfilt_future;
 
 
