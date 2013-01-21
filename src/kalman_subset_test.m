@@ -14,20 +14,19 @@ end
 
 %% CREATE AND RUN SYSTEM
 % num neurons total
-N = 100;
+N = 1000;
 % num observed neurons
-K = 20;
+K = 200;
 
 % time
-T = 10000;
+T = 100000;
 
 % stim
-M = 20; % dimension of stimulus
-x_sigma = 1;
-% X = [normrnd(0,x_sigma,T,M) ones(T,1)];
-% X = [rand(M,T); ones(1,T)];
-X = rand(M,T+1);
-M = size(X,1);
+stim_dim = 20; % dimension of stimulus
+x_sigma = 1; % sd of stimulus
+% X = [normrnd(0,x_sigma,stim_dim,T+1) ones(1,T+1)];
+X = normrnd(0,x_sigma,stim_dim,T+1);
+M = stim_dim + 1;
 
 
 
@@ -69,11 +68,11 @@ end
 %% RUN TEST ON DIFFERENT OBSERVATION PARADIGMS
 
 % CASE 1: CONSTANT SUBSET - OBSERVE FIRST K NEURONS
-obs_matrix = eye(N + M);
-obs_matrix(M+K+1:end,M+K+1:end) = 0;
-S_obs = zeros(size(S));
-S_obs(1:K,:) = S(1:K,:);
-data = [X; S_obs];
+obs_matrix_one_sub = eye(M+K, M+K);
+obs_matrix_one_sub = [obs_matrix_one_sub zeros(M+K, N-K)];
+model = ones(1,T+1);
+
+data_one_sub = [X; S(1:K,:)];
 
 % [A, C, Q, R, INITX, INITV, LL] = LEARN_KALMAN(DATA, A0, C0, Q0, R0, INITX0, INITV0, MAX_ITER, DIAGQ, DIAGR, ARmode) fits
 % the parameters which are defined as follows
@@ -86,7 +85,7 @@ diagR = 1;
 max_iter = 10;
 dim = N + M;
 [A_onesub, C_onesub, Q_onesub, R_onesub, initx_onesub, initV_onesub, LL_onesub] = ...
-    learn_kalman(data, randn(dim), obs_matrix, diag([x_sigma.*ones(1,M) n_sigma']), zeros(N+M), [X(:,1); zeros(N,1)], zeros(M+N), max_iter, diagQ, diagR, ARmode, @enforce_constraint, M, x_sigma, obs_matrix);
+    learn_kalman_subset(data, randn(dim), obs_matrix, diag([x_sigma.*ones(1,M) n_sigma']), zeros(N+M), [X(:,1); zeros(N,1)], zeros(M+N), max_iter, diagQ, diagR, ARmode, model, @enforce_constraint, M, x_sigma, obs_matrix);
 %                data  A0          C0           Q0
 %                                                                                   R0        initX0                initV0 
 %% plot diagnostic plots
