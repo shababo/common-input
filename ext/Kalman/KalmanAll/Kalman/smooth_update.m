@@ -33,6 +33,7 @@ xsmooth = xfilt + J*(xsmooth_future - xpred);
 Vsmooth = Vfilt + J*(Vsmooth_future - Vpred)*J';
 [R p] = chol(Vfilt_future);
 if p ~= 0
+    
     error('Vfilt_future is not PSD')
 else
     disp('PSD!')
