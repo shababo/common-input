@@ -14,19 +14,19 @@ end
 
 %% CREATE AND RUN SYSTEM
 % num neurons total
-N = 1000;
+N = 100;
 % num observed neurons
-K = 200;
+K = 20;
 
 % time
-T = 100000;
+T = 10000;
 
 % stim
-stim_dim = 20; % dimension of stimulus
+stim_dim = 0; % dimension of stimulus
 x_sigma = 1; % sd of stimulus
 % X = [normrnd(0,x_sigma,stim_dim,T+1) ones(1,T+1)];
 X = normrnd(0,x_sigma,stim_dim,T+1);
-M = stim_dim + 1;
+M = size(X,1);
 
 
 
@@ -73,6 +73,9 @@ obs_matrix_one_sub = [obs_matrix_one_sub zeros(M+K, N-K)];
 model = ones(1,T+1);
 
 data_one_sub = [X; S(1:K,:)];
+data_test = obs_matrix_one_sub * [X; S];
+
+%%
 
 % [A, C, Q, R, INITX, INITV, LL] = LEARN_KALMAN(DATA, A0, C0, Q0, R0, INITX0, INITV0, MAX_ITER, DIAGQ, DIAGR, ARmode) fits
 % the parameters which are defined as follows
@@ -82,19 +85,20 @@ data_one_sub = [X; S(1:K,:)];
 ARmode = 0; % set to be AR linear-gaussian model
 diagQ = 1;
 diagR = 1;
-max_iter = 10;
-dim = N + M;
+max_iter = 2;
+
+
 [A_onesub, C_onesub, Q_onesub, R_onesub, initx_onesub, initV_onesub, LL_onesub] = ...
-    learn_kalman_subset(data, randn(dim), obs_matrix, diag([x_sigma.*ones(1,M) n_sigma']), zeros(N+M), [X(:,1); zeros(N,1)], zeros(M+N), max_iter, diagQ, diagR, ARmode, model, @enforce_constraint, M, x_sigma, obs_matrix);
-%                data  A0          C0           Q0
-%                                                                                   R0        initX0                initV0 
+    learn_kalman_subset(data_one_sub, randn(N+M), obs_matrix_one_sub, diag([x_sigma.*ones(1,M) n_sigma']), zeros(K+M), [X(:,1); zeros(N,1)], diag([x_sigma.*ones(1,M) n_sigma']), max_iter, diagQ, diagR, ARmode, model);%, @enforce_constraint, M, x_sigma, obs_matrix_one_sub);
+%                       data           A0         C0                   Q0
+%                                                                                                          R0           initX0                initV0 
 %% plot diagnostic plots
-A_theta_part = A_onesub(M+1:end,1:M);
+A_theta_part = A_onesub(M+1:M+K,1:M);
 A_w_part_obs = A_onesub(M+1:M+K,M+1:M+K);
 % A_w_part_unobs = A_onesub(M+1+K+1:end,M+1+K+1:end);
 
 W_true_obs = W(1:K,1:K);
-theta_true_obs = theta(1:K,1:K);
+% theta_true_obs = theta(1:K,1:K);
 
 figure(1)
 % scatter(A_w_part_unobs(:),'b');
@@ -104,14 +108,21 @@ ylabel('Actual W values')
 R_w = corrcoef(A_w_part_obs(:),W_true_obs(:));
 title(['Connectivity Inference - 1 Subset - R_{obs} = ' num2str(R_w(2))]);
 
-figure(2)
-scatter(A_theta_part(:),theta_true_obs(:))
-xlabel('Inferred \theta values')
-ylabel('Actual \theta values')
-R_theta = corrcoef(A_theta_part(:),theta_true_obs(:));
-title(['Filter Inference - 1 Subset - R_{obs} = ' num2str(R_theta(2))]);
+% figure(2)
+% scatter(A_theta_part(:),theta_true_obs(:))
+% xlabel('Inferred \theta values')
+% ylabel('Actual \theta values')
+% R_theta = corrcoef(A_theta_part(:),theta_true_obs(:));
+% title(['Filter Inference - 1 Subset - R_{obs} = ' num2str(R_theta(2))]);
 
 %% RUN TEST ON DIFFERENT OBSERVATION PARADIGMS
+% CASE 2: VARYING SUBSET - OBSERVE SETS K NEURONS
+obs_matrix_one_sub = eye(M+K, M+K);
+obs_matrix_one_sub = [obs_matrix_one_sub zeros(M+K, N-K)];
+model = ones(1,T+1);
+
+data_one_sub = [X; S(1:K,:)];
+data_test = obs_matrix_one_sub * [X; S];
 
 % CASE 2: VARYING SUBSET - OBSERVE SETS K NEURONS
 num_subsets = 10;
@@ -142,7 +153,7 @@ data = [X; S];
 ARmode = 0; % set to be AR linear-gaussian model
 diagQ = 1;
 diagR = 1;
-max_iter = 10;
+max_iter = 2;
 dim = N + M;
 contraint_func = @enforce_constraint;
 [A_multisub, C_multisub, Q_multisub, R_multisub, initx_multisub, initV_multisub, LL_multisub] = ...

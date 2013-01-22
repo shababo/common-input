@@ -17,8 +17,8 @@ end
 m = m(:);
 M = m*ones(1,N); % replicate the mean across columns
 denom = (2*pi)^(d/2)*sqrt(abs(det(C)));
-% mahal = sum(((x-M)'*inv(C)).*(x-M)',2);   % Chris Bregler's trick
-mahal = sum(((x-M)'*pinv(C)).*(x-M)',2);   % Chris Bregler's trick
+mahal = sum(((x-M)'*inv(C)).*(x-M)',2);   % Chris Bregler's trick
+% mahal = sum((C\((x-M)')).*(x-M)',2);
 if any(mahal<0)
   warning('mahal < 0 => C is not psd')
 end

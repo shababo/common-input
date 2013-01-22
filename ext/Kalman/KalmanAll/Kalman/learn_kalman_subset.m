@@ -37,7 +37,7 @@ if nargin < 8, max_iter = 10; end
 if nargin < 9, diagQ = 0; end
 if nargin < 10, diagR = 0; end
 if nargin < 11, ARmode = 0; end
-if nargin < 12, constr_fun = []; end
+if nargin < 13, constr_fun = []; end
 verbose = 1;
 thresh = 1e-4;
 
@@ -162,7 +162,7 @@ if ARmode
   VVsmooth = zeros(ss, ss, T);
   loglik = 0;
 else
-  [xsmooth, Vsmooth, VVsmooth, loglik] = kalman_smoother(y, A, C, Q, R, initx, initV, 'model', model);
+  [xsmooth, Vsmooth, VVsmooth, loglik] = kalman_filter(y, A, C, Q, R, initx, initV, 'model', model);
 end
 
 delta = zeros(os, ss);

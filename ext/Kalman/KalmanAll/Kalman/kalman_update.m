@@ -60,11 +60,17 @@ e = y - C*xpred; % error (innovation)
 n = length(e);
 ss = length(A);
 S = C*Vpred*C' + R;
-%Sinv = inv(S);
-Sinv = pinv(S);
+% C
+% Vpred
+% assignin('base','C_test',C)
+% assignin('base','Vpred_test',Vpred)
+% error('goodbye')
+Sinv = inv(S);
+% Sinv = pinv(S);
 ss = length(V);
 loglik = gaussian_prob(e, zeros(1,length(e)), S, 1);
 K = Vpred*C'*Sinv; % Kalman gain matrix
+% K = S\(Vpred*C');
 % If there is no observation vector, set K = zeros(ss).
 xnew = xpred + K*e;
 Vnew = (eye(ss) - K*C)*Vpred;
