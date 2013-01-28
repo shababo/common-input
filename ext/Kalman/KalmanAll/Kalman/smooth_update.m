@@ -31,16 +31,6 @@ Vpred = A*Vfilt*A' + Q; % Vpred = Cov[X(t+1) | t]
 J = Vfilt * A' * inv(Vpred); % smoother gain matrix
 xsmooth = xfilt + J*(xsmooth_future - xpred);
 Vsmooth = Vfilt + J*(Vsmooth_future - Vpred)*J';
-[R p] = chol(Vfilt_future);
-if p ~= 0
-    
-    error('Vfilt_future is not PSD')
-else
-    disp('PSD!')
-end
 VVsmooth_future = VVfilt_future + (Vsmooth_future - Vfilt_future)*inv(Vfilt_future)*VVfilt_future;
-% assignin('base','Vfilt_future',Vfilt_future)
-% error('goodbye')
-% VVsmooth_future = VVfilt_future + (Vsmooth_future - Vfilt_future)*pinv(Vfilt_future)*VVfilt_future;
 
 

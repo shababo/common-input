@@ -60,11 +60,6 @@ e = y - C*xpred; % error (innovation)
 n = length(e);
 ss = length(A);
 S = C*Vpred*C' + R;
-% C
-% Vpred
-% assignin('base','C_test',C)
-% assignin('base','Vpred_test',Vpred)
-% error('goodbye')
 Sinv = inv(S);
 % Sinv = pinv(S);
 ss = length(V);

@@ -21,7 +21,7 @@ function [A, C, Q, R, initx, initV, LL] = ...
 % ARMODE=1 specifies that C=I, R=0. i.e., a Gauss-Markov process. (Default 0).
 % This problem has a global MLE. Hence the initial parameter values are not important.
 % 
-% LEARN_KALMAN(DATA, A0, C0, Q0, R0, INITX0, INITV0, MAX_ITER, DIAGQ, DIAGR, F, P1, P2, ...)
+% LEARN_KALMAN_SUBSET(DATA, A0, C0, Q0, R0, INITX0, INITV0, MAX_ITER, DIAGQ, DIAGR, F, P1, P2, ...)
 % calls [A,C,Q,R,initx,initV] = f(A,C,Q,R,initx,initV,P1,P2,...) after every M step. f can be
 % used to enforce any constraints on the params. 
 %
@@ -40,6 +40,8 @@ if nargin < 11, ARmode = 0; end
 if nargin < 13, constr_fun = []; end
 verbose = 1;
 thresh = 1e-4;
+
+num_subsets = size(C,3);
 
 
 if ~iscell(data)
@@ -119,6 +121,7 @@ while ~converged && (num_iter <= max_iter)
   % Tsum1 = N*(T-1);
   Tsum1 = Tsum - N;
   A = beta * inv(gamma1);
+
   %A = (gamma1' \ beta')';
   Q = (gamma2 - A*beta') / Tsum1;
   if diagQ
@@ -134,7 +137,11 @@ while ~converged && (num_iter <= max_iter)
   end
   initx = x1sum / N;
   initV = P1sum/N - initx*initx';
-
+    
+  A = repmat(A,[1 1 num_subsets]);
+  C = repmat(C,[1 1 num_subsets]);
+  Q = repmat(Q,[1 1 num_subsets]);
+  R = repmat(R,[1 1 num_subsets]);
   if ~isempty(constr_fun)
     [A,C,Q,R,initx,initV] = feval(constr_fun, A, C, Q, R, initx, initV, varargin{:});
   end
@@ -162,7 +169,7 @@ if ARmode
   VVsmooth = zeros(ss, ss, T);
   loglik = 0;
 else
-  [xsmooth, Vsmooth, VVsmooth, loglik] = kalman_filter(y, A, C, Q, R, initx, initV, 'model', model);
+  [xsmooth, Vsmooth, VVsmooth, loglik] = kalman_smoother(y, A, C, Q, R, initx, initV, 'model', model);
 end
 
 delta = zeros(os, ss);
