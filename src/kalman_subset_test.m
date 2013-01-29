@@ -19,13 +19,13 @@ end
 num_neurons_total = 100; % DON'T CHANGE FOR NOW
 % num observed neurons at any given time (FOR NOW ONLY CHOOSE 20, 50, 80,
 % OR 100)
-num_neurons_obs = 80; 
+num_neurons_obs = 20; 
 % for now please ensure obs/total evenly
 % if mod(num_neurons_total,num_neurons_obs) ~= 0
 %     error('num_neurons_obs does not evenly divide num_neurons_total... sorry, but it is simplier to enforce this for now...')
 % end
 % timesteps (not including t = 0 which has all neural responses at 0)
-T = 10000;
+T = 100000;
 % do we have a baseline parameter for each neuron
 have_baseline = 0;
 
@@ -124,7 +124,7 @@ observations_one_sub = obs_matrix_one_sub * state + normrnd(0,observation_sigma,
 ARmode = 0; % set to be AR linear-gaussian model
 diagQ = 1;
 diagR = 1;
-max_iter = 5;
+max_iter = 10;
 
 state_matrix_0 = randn(state_dim);
 state_cov_0 = diag([stim_sigma.*ones(stim_dim,1) state_neurons_sigma']);
@@ -186,11 +186,12 @@ for i = 1:size(subsets,1)
 end
 
 %%
-% setup parameters for learning
-ARmode = 0;
-diagQ = 1;
-diagR = 1;
-max_iter = 5;
+% setup parameters for learning - COMMENTED OUT SO YOU JUST SET FOR FIRST
+% EXPERIMENT
+% ARmode = 0;
+% diagQ = 1;
+% diagR = 1;
+% max_iter = 5;
 
 % setup initial conditions
 state_matrix_0 = repmat(randn(state_dim),[1 1 num_subsets]);
