@@ -41,6 +41,12 @@ if nargin < 13, constr_fun = []; end
 verbose = 1;
 thresh = 1e-4;
 
+% L1 toolbox stuffs
+% lambda = ones(numel(A0),1);
+% L1Options.maxIter = 2000;
+% L1Options.verbose = 1; % Set to 0 to turn off output
+% funObj = @(A_vec)multivar_least_squares_error(A_vec,data);
+
 num_subsets = size(C,3);
 
 
@@ -121,6 +127,10 @@ while ~converged && (num_iter <= max_iter)
   % Tsum1 = N*(T-1);
   Tsum1 = Tsum - N;
   A = beta * inv(gamma1);
+%   A_vec = A(:,:,1);
+%   A_vec = A_vec(:);
+%   A = L1General2_SPG(funObj,A(:,:,1)(:),lambdaVect,options);
+
 
   %A = (gamma1' \ beta')';
   Q = (gamma2 - A*beta') / Tsum1;
