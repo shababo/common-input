@@ -135,20 +135,20 @@ num_subsets = 6;
 if mod(T,num_subsets) ~= 0
     error('Please choose a subset size that divides evenly into T')
 end
-T_per_subset = 100;
+T_per_subset = 1000;
 
 subsets = [1 2; 1 3; 1 4; 2 3; 2 4; 3 4]; 
 
 obs_matrix_multi_sub = zeros(observation_dim,state_dim,num_subsets);
 observations_multi_sub = zeros(observation_dim,T+1);
-subset_index_multi_sub = zeros(T,1);
+subset_index_multi_sub = ones(T,1);
 
 for i = 1:size(subsets,1)
     
     obs_matrix_multi_sub(1:stim_dim,1:stim_dim,i) = eye(stim_dim);
     obs_matrix_multi_sub(stim_dim + 1:end,stim_dim + subsets(i,:),i) = eye(num_neurons_obs);
-    subset_index_multi_sub((i-1)*T_per_subset+1:i*T_per_subset) = i;
-    observations_multi_sub(:,(i-1)*T_per_subset+1:i*T_per_subset) = obs_matrix_multi_sub(:,:,i) * state(:,(i-1)*T_per_subset+1:i*T_per_subset) + normrnd(0,observation_sigma,observation_dim,T_per_subset);
+    subset_index_multi_sub((i-1)*T_per_subset+2:i*T_per_subset+1) = i;
+    observations_multi_sub(:,(i-1)*T_per_subset+2:i*T_per_subset+1) = obs_matrix_multi_sub(:,:,i) * state(:,(i-1)*T_per_subset+1:i*T_per_subset) + normrnd(0,observation_sigma,observation_dim,T_per_subset);
     
 end
 

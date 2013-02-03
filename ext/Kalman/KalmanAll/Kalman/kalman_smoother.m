@@ -7,7 +7,7 @@ function [xsmooth, Vsmooth, VVsmooth, loglik] = kalman_smoother(y, A, C, Q, R, i
 % instead of on y(:, 1:t).
 
 [os T] = size(y);
-ss = length(A);
+ss = size(A,1);
 
 % set default params
 model = ones(1,T);

@@ -13,7 +13,7 @@ end
 
 connectivity_learned_one_sub = state_matrix_learned_one_sub(stim_dim+1:end,stim_dim+1:end);
 connectivity_obs_learned_one_sub = connectivity_learned_one_sub(1:num_neurons_obs,1:num_neurons_obs);
-connectivity_obs_true_one_sub = connectivty_matrix(1:num_neurons_obs,1:num_neurons_obs);
+connectivity_obs_true_one_sub = connectivity_matrix(1:num_neurons_obs,1:num_neurons_obs);
 
 figure(1)
 scatter(connectivity_obs_learned_one_sub(:),connectivity_obs_true_one_sub(:),'r')

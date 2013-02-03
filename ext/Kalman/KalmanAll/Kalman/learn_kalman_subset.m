@@ -186,6 +186,9 @@ delta = zeros(os, ss);
 gamma = zeros(ss, ss);
 beta = zeros(ss, ss);
 for t=1:T
+    size(delta)
+    size(y)
+    size(xsmooth)
   delta = delta + y(:,t)*xsmooth(:,t)';
   gamma = gamma + xsmooth(:,t)*xsmooth(:,t)' + Vsmooth(:,:,t);
   if t>1 beta = beta + xsmooth(:,t)*xsmooth(:,t-1)' + VVsmooth(:,:,t); end
