@@ -25,7 +25,7 @@ num_neurons_obs = 20;
 %     error('num_neurons_obs does not evenly divide num_neurons_total... sorry, but it is simplier to enforce this for now...')
 % end
 % timesteps (not including t = 0 which has all neural responses at 0)
-T = 100000;
+T = 10000;
 % do we have a baseline parameter for each neuron
 have_baseline = 0;
 
@@ -46,23 +46,24 @@ stim_filter = normrnd(0,stim_filter_sigma,num_neurons_total,stim_dim);
 % THIS METHOD ENSURES GOOD SYSTEM DYNAMICS
 % sparsity = .1;
 % w_sigma = 1;
-% W = normrnd(0,w_sigma,num_neurons_total,num_neurons_total) .* (rand(num_neurons_total,num_neurons_total) < sparsity); 
+% connectivity_matrix = normrnd(0,w_sigma,num_neurons_total,num_neurons_total) .* (rand(num_neurons_total,num_neurons_total) < sparsity); 
 
 % 2) create connectivity so that it has only eigenvalues less than 1 to
 % ensure good system dynamics, but not sparse
-eigenvals = (0.5*rand(num_neurons_total,1)+0.5) .* sign(randn(num_neurons_total,1));
-D = diag(eigenvals);
-V = orth(randn(num_neurons_total));
-connectivty_matrix = V*D*V';
+% eigenvals = (0.5*rand(num_neurons_total,1)+0.5) .* sign(randn(num_neurons_total,1));
+% D = diag(eigenvals);
+% V = orth(randn(num_neurons_total));
+% connectivity_matrix = V*D*V';
 
 % create connectivy with all eigvals < 1 AND sparse - this method should
 % both give us sparsity and good system dynamics
-% sparsity = .1;
-% eigenvals = (.5*rand(num_neurons_total,1)+.5).*sign(randn(num_neurons_total,1));
-% W = triu(sprand(num_neurons_total,num_neurons_total,sparsity),1) + spdiags(eigenvals,0,num_neurons_total,num_neurons_total);
-% for i = 1:num_neurons_total
-%     W = rjr(W);
-% end
+sparsity = .1;
+eigenvals = (.5*rand(num_neurons_total,1)+.5).*sign(randn(num_neurons_total,1));
+connectivity_matrix = triu(sprand(num_neurons_total,num_neurons_total,sparsity),1) + spdiags(eigenvals,0,num_neurons_total,num_neurons_total);
+for i = 1:num_neurons_total
+    connectivity_matrix = rjr(connectivity_matrix);
+end
+connectivity_matrix = full(connectivity_matrix);
 
 % add baseline
 % use_baseline = 0;
@@ -80,7 +81,7 @@ state_neurons_sigma = .5*rand(num_neurons_total,1)+.5;
 state_neurons = zeros(num_neurons_total,T+1); % NOTE, FIRST INDEX is T=0
 for t = 1:T
 
-   state_neurons(:,t+1) = stim_filter * state_stimuli(:,t) + connectivty_matrix * state_neurons(:,t) + mvnrnd(zeros(num_neurons_total,1),diag(state_neurons_sigma))';
+   state_neurons(:,t+1) = stim_filter * state_stimuli(:,t) + connectivity_matrix * state_neurons(:,t) + mvnrnd(zeros(num_neurons_total,1),diag(state_neurons_sigma))';
 
 end
 
@@ -152,7 +153,7 @@ posterior_state_cov_0 = observation_sigma*eye(state_dim);
 %     i.e., A(:,:,m), C(:,:,m), Q(:,:,m), R(:,:,m).
 %     However, init_x and init_V are independent of model(1).
 
-num_subsets = 10;
+num_subsets = 4;
 %again, we want to make sure we divide evenly into T to keep things simple
 %for now
 if mod(T,num_subsets) ~= 0
@@ -163,7 +164,8 @@ T_per_subset = T/num_subsets;
 %for now I'm going to hard code this, but we should make it more flexible
 switch num_neurons_obs
     case 20
-        subsets = [1:20;21:40;41:60;61:80;81:100;11:30;31:50;51:70;71:90;1:10 91:100];
+%         subsets = [1:20;21:40;41:60;61:80;81:100;11:30;31:50;51:70;71:90;1:10 91:100];
+        subsets = [1:20;11:30;21:40;1:10 31:40];
     case 50
         subsets = [1:50;11:60;21:70;31:80;41:90;51:100;1:10 61:100;1:20 71:100;1:30 81:100;1:40 91:100];
     case 80
